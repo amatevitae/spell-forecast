@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark"><title>spell forecast</title>
+<style>
+:root{font-family:Georgia,'Times New Roman',serif;color:#f4e3bd;background:#10100f;font-synthesis:none}*{box-sizing:border-box}body{margin:0;padding:12px}main{max-width:440px;margin:auto;border:1px solid #493821;border-radius:15px;padding:19px;background:#10100f}.heading{display:flex;justify-content:space-between;align-items:center;gap:8px}.heading h1{font-size:23px;font-style:italic;margin:0;font-weight:600}.eyebrow,.foot{color:#c7a876;font-size:11px}.eyebrow{text-align:right}hr{border:0;border-top:1px solid #4b3926;margin:16px 0}.center{display:flex;flex-direction:column;align-items:center;gap:16px}.tarot-card{width:183px;min-height:259px;background:#1a1612;border:1px solid #a98755;border-radius:9px;padding:8px;display:flex}.inner{border:1px solid #6c5538;border-radius:5px;width:100%;min-height:239px;display:flex;flex-direction:column;justify-content:space-around;align-items:center;padding:10px;text-align:center}.ornaments{color:#d4af70;font-size:15px;letter-spacing:4px}.symbol{font-size:58px;line-height:1.2;color:#d4af70}.name{font-size:19px;font-weight:600;line-height:1.25}.orientation{font-size:12px;color:#d4af70}.hint{font-size:14px;text-align:center;color:#cbb594;margin:0}button{font-family:inherit;cursor:pointer}#draw{background:#d4af70;color:#19130d;border:0;border-radius:7px;padding:12px 19px;width:100%;font-weight:700;font-size:14px}#draw:hover{background:#f4e3bd}#draw:focus-visible,.toggle:focus-visible{outline:2px solid #f4e3bd;outline-offset:3px}.locked{color:#c6ac87;font-size:12px;display:flex;gap:7px;align-items:center}.interpretation{border:1px solid #5c4730;border-radius:8px;overflow:hidden;margin-top:18px}.toggle{padding:14px 12px;background:transparent;color:#e6c58f;border:0;width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;font-size:16px;font-weight:600}.toggle .chev{font-family:Arial,sans-serif;font-size:14px}.reading{padding:2px 14px 14px;border-top:1px solid #473623;font-size:14px;line-height:1.65;color:#e8dcc9}.reading h2{font-size:15px;color:#f4e3bd;margin-bottom:5px}.reading p{margin:8px 0}.reading .subhead{color:#d4af70;font-weight:bold}.foot{text-align:center;margin:0}.notice{margin:11px 0 0;color:#b6a184;font:12px/1.5 Arial,sans-serif;text-align:center}.error{color:#f3a79f} [hidden]{display:none!important}
+.spell-setup{margin:0 0 20px}.spell-setup label{display:block;color:#d4af70;font-size:14px;margin-bottom:8px}.spell-controls{display:flex;gap:8px}.spell-controls input{flex:1;min-width:0;background:#201a14;border:1px solid #87683e;border-radius:7px;color:#f4e3bd;padding:11px;font:14px Georgia,serif}.spell-controls button{border:1px solid #d4af70;background:#302518;color:#f4e3bd;border-radius:7px;padding:10px;font-size:13px}.spell-controls button:hover{background:#48351f}.spell-controls input:focus-visible,.spell-controls button:focus-visible{outline:2px solid #f4e3bd;outline-offset:2px}#draw:disabled{opacity:.45;cursor:not-allowed}
+</style>
+</head><body><main>
+<header class="heading"><h1>✦ spell forecast</h1><span class="eyebrow">✧ tarot divination ✧</span></header><hr>
+<section class="spell-setup" aria-label="choose spell">
+<label for="spell-name">✦ spell name</label>
+<div class="spell-controls"><input id="spell-name" type="text" maxlength="100" placeholder="e.g. investments" autocomplete="off"><button id="load-spell" type="button">open spell</button></div>
+<p id="spell-status" class="notice">enter a spell name to start or reopen its saved reading.</p>
+</section>
+<section class="center" aria-label="tarot card">
+<div class="tarot-card"><div class="inner"><div class="ornaments">✧ ✦ ✧</div><div id="symbol" class="symbol">☽</div><div id="name" class="name">your reading awaits</div><div id="orientation" class="orientation" hidden></div><div class="ornaments">✧ ✦ ✧</div></div></div>
+<p id="hint" class="hint">what does the future hold for your spell?</p><button id="draw" type="button">✧ reveal your forecast</button><div id="locked" class="locked" hidden>♢ your card has been drawn</div>
+</section>
+<section id="interpretation" class="interpretation" hidden><button id="toggle" class="toggle" type="button" aria-expanded="false" aria-controls="reading">✦ spell interpretation <span id="chev" class="chev">⌄</span></button><div id="reading" class="reading" hidden></div></section>
+<p id="notice" class="notice" hidden></p><hr><p class="foot">78 tarot cards · one draw per spell</p>
+</main>
+<script>
+'use strict';
+const major = [
+['the fool','✧','a new path','the spell may lead to an unexpected opportunity or a result you could not have planned.','rushing into the unknown may leave important details unfinished. revisit your preparation.'],
+['the magician','✦','focused manifestation','your ingredients, intention and actions are aligned for meaningful progress.','your energy may be scattered. clarify your intention and work with what you already have.'],
+['the high priestess','☽','hidden development','the working may unfold quietly. notice dreams, intuition and subtle changes.','answers may remain concealed for now. avoid forcing signs or overinterpreting every event.'],
+['the empress','❀','nurtured growth','the spell has room to grow through patience, care and receptivity.','the working may need more attention or a more supportive environment.'],
+['the emperor','♜','structure and stability','clear boundaries and an orderly method can support a lasting outcome.','rigidity or excessive control may be limiting progress. adjust your approach.'],
+['the hierophant','✥','ritual and tradition','established practices, guidance or a familiar ritual structure may support this spell.','an inherited method might not suit this intention. consider whether it needs adapting.'],
+['the lovers','♡','alignment and choice','the outcome is supported when your actions remain consistent with your intention.','mixed priorities or conflicting desires could weaken your focus.'],
+['the chariot','✧','directed momentum','determination and continued action can move the spell forward.','trying to control every detail may create resistance or exhaustion.'],
+['strength','♌','gentle persistence','confidence, patience and steady effort can help this working develop.','frustration or self-doubt may be interfering. give the working room to settle.'],
+['the hermit','☼','quiet progress','a period of waiting and observation may be an important part of the outcome.','isolation or excessive analysis may prevent you from seeing useful feedback.'],
+['wheel of fortune','☸','changing circumstances','a change in timing or circumstances may create an opening for your intention.','the timeline may be unpredictable. remain flexible rather than relying on one exact result.'],
+['justice','⚖','balance and consequences','the outcome may reflect your decisions, commitments and the conditions you set.','an imbalance or unresolved issue may need addressing before progress continues.'],
+['the hanged man','▽','a necessary pause','a delay may reveal a better angle or a new way to approach the spell.','resisting a pause may prolong frustration. reconsider what you can release.'],
+['death','✳','transformation','an ending or significant change may be part of how the intention manifests.','holding onto the old situation may delay the transition you are asking for.'],
+['temperance','⚗','gradual integration','slow, balanced changes are more likely than an immediate dramatic result.','uneven effort or conflicting influences may need balancing.'],
+['the devil','⛓','attachments and restrictions','the working may expose an attachment or influence that deserves closer examination.','fear, fixation or an unhealthy dependency may complicate the intended result.'],
+['the tower','⚡','sudden change','an unexpected disruption could clear the way for a different outcome.','resisting necessary change may make the process feel more difficult.'],
+['the star','✶','hope and renewal','the spell is associated with encouragement, recovery and renewed possibility.','discouragement may hide the progress already occurring.'],
+['the moon','☾','uncertainty and intuition','some influences are still hidden. take your time interpreting developments.','confusion or misleading assumptions may obscure the outcome.'],
+['the sun','☀','clarity and success','positive movement, understanding and a satisfying outcome are highlighted.','progress may be present but difficult to appreciate. check your expectations.'],
+['judgement','✥','a turning point','past efforts may come together in an important decision or breakthrough.','unfinished business or hesitation may need attention before the next stage.'],
+['the world','◎','completion','the working may reach a meaningful conclusion or fulfil its intended purpose.','a final detail may need resolving before you can consider the spell complete.']
+];
+const suits={
+'cups':{symbol:'♧',area:'emotions, relationships and intuition',messages:['an emotional opening','balancing feelings and connection','joyful support and community','emotional withdrawal or contemplation','disappointment that needs processing','memories and familiar connections','many possibilities or mixed desires','moving away from what no longer serves','emotional satisfaction','lasting emotional harmony','a gentle message or new feeling','following the heart actively','compassionate emotional steadiness','emotional maturity and balance']},
+'pentacles':{symbol:'⬡',area:'money, resources, health and practical results',messages:['a tangible new opportunity','balancing time and resources','skilled collaboration','protecting what has been built','a temporary practical difficulty','help and exchange of resources','patient investment and assessment','consistent practical effort','independence and tangible rewards','long-term material security','a practical message or opportunity','slow and reliable progress','nurturing the material conditions','stable management and achievement']},
+'wands':{symbol:'♜',area:'motivation, energy, growth and creative action',messages:['a fresh surge of inspiration','planning a new direction','expansion and first results','a milestone worth celebrating','competition or conflicting efforts','recognition and forward momentum','defending your progress','rapid developments','persistence near the finish','carrying too much responsibility','an exciting idea or message','bold pursuit and movement','confident, creative leadership','sustained direction and ambition']},
+'swords':{symbol:'⚔',area:'thoughts, communication, decisions and challenges',messages:['a breakthrough in clarity','a difficult choice','a painful truth or setback','needed rest and recovery','conflict that should be handled carefully','moving toward calmer conditions','the need for discretion and strategy','feeling restricted by assumptions','worries that need grounding','the end of a difficult phase','curiosity and close attention','fast decisions and direct communication','clear boundaries and independent judgement','reasoned leadership and sound decisions']}
+};
+const rank=['ace','two','three','four','five','six','seven','eight','nine','ten','page','knight','queen','king'];
+const deck=major.map(([name,symbol,theme,upright,reversed])=>({name,symbol,theme,upright,reversed}));
+for(const [suit,detail] of Object.entries(suits))for(let i=0;i<14;i++){
+ const theme=detail.messages[i];deck.push({name:`${rank[i]} of ${suit}`,symbol:detail.symbol,theme,
+ upright:`this card points to ${theme}, especially around ${detail.area}. consider how that theme relates to your spell's intention and timing.`,
+ reversed:`the theme of ${theme} may be delayed, blocked or developing internally. examine any obstacles relating to ${detail.area} before expecting clear results.`});
+}
+const notice=document.getElementById('notice');
+const spellInput=document.getElementById('spell-name');
+const spellStatus=document.getElementById('spell-status');
+const openButton=document.getElementById('load-spell');
+const draw=document.getElementById('draw'),locked=document.getElementById('locked'),hint=document.getElementById('hint'),box=document.getElementById('interpretation'),toggle=document.getElementById('toggle'),reading=document.getElementById('reading');
+let storageOk=true;
+try{const test='__spell_forecast_test__';localStorage.setItem(test,'1');localStorage.removeItem(test)}catch(e){storageOk=false}
+if(!storageOk)warn('browser storage is unavailable. readings cannot be reliably saved here.',true);
+let activeSpell='',selection=null;
+draw.disabled=true;
+function warn(message,isError=false){notice.hidden=false;notice.textContent=message;notice.classList.toggle('error',isError)}
+function spellKey(name){return 'spell-forecast-v1:'+encodeURIComponent(name.trim().replace(/\s+/g,' ').toLocaleLowerCase())}
+function resetCard(){
+ document.getElementById('symbol').textContent='☽';
+ document.getElementById('name').textContent='your reading awaits';
+ document.getElementById('orientation').hidden=true;
+ draw.hidden=false;hint.hidden=false;locked.hidden=true;box.hidden=true;
+ reading.hidden=true;toggle.setAttribute('aria-expanded','false');document.getElementById('chev').textContent='⌄';
+}
+function render(){
+ resetCard();draw.disabled=!activeSpell;
+ if(!selection)return;
+ const c=deck[selection.index];
+ document.getElementById('symbol').textContent=c.symbol;
+ document.getElementById('name').textContent=c.name;
+ const orientation=document.getElementById('orientation');orientation.hidden=false;orientation.textContent=selection.reversed?'reversed':'upright';
+ draw.hidden=true;hint.hidden=true;locked.hidden=false;box.hidden=false;
+ const text=selection.reversed?c.reversed:c.upright;
+ reading.replaceChildren();
+ const h=document.createElement('h2');h.textContent=`${c.name} · ${selection.reversed?'reversed':'upright'}`;
+ const intro=document.createElement('p');intro.textContent=`forecast: ${c.theme}.`;
+ const p=document.createElement('p');p.textContent=text;
+ const label=document.createElement('p');label.className='subhead';label.textContent='what this means for your spell';
+ const last=document.createElement('p');last.textContent=selection.reversed?'your outcome may need time, adjustments or attention to the challenge this card identifies.':'watch how this theme develops alongside your spell, and respond to any opportunities it brings.';
+ reading.append(h,intro,p,label,last);
+}
+function openSpell(){
+ const name=spellInput.value.trim().replace(/\s+/g,' ');
+ if(!name){spellStatus.textContent='please enter a spell name first.';spellInput.focus();return}
+ activeSpell=name;selection=null;
+ if(storageOk){try{
+ const saved=JSON.parse(localStorage.getItem(spellKey(name)));
+ if(saved&&Number.isInteger(saved.index)&&saved.index>=0&&saved.index<deck.length&&typeof saved.reversed==='boolean')selection=saved;
+ }catch(e){warn('a previous reading could not be loaded.',true)}}
+ spellStatus.textContent=selection?`saved forecast loaded for "${name}".`:`ready to draw for "${name}".`;
+ render();
+}
+openButton.addEventListener('click',openSpell);
+spellInput.addEventListener('keydown',e=>{if(e.key==='Enter')openSpell()});
+spellInput.addEventListener('input',()=>{activeSpell='';selection=null;spellStatus.textContent='click open spell to load this spell’s reading.';render()});
+draw.addEventListener('click',()=>{
+ if(selection||!activeSpell)return;
+ const bytes=new Uint32Array(2);
+ if(window.crypto&&crypto.getRandomValues)crypto.getRandomValues(bytes);
+ else{bytes[0]=Math.floor(Math.random()*2**32);bytes[1]=Math.floor(Math.random()*2**32)}
+ selection={index:bytes[0]%deck.length,reversed:bytes[1]%10<3};
+ if(storageOk){try{localStorage.setItem(spellKey(activeSpell),JSON.stringify(selection))}
+ catch(e){warn('could not save this card. the reading may reset after reloading.',true)}}
+ spellStatus.textContent=`forecast saved for "${activeSpell}".`;
+ render();
+});
+toggle.addEventListener('click',()=>{const open=toggle.getAttribute('aria-expanded')==='true';toggle.setAttribute('aria-expanded',String(!open));reading.hidden=open;document.getElementById('chev').textContent=open?'⌄':'⌃'});
+render();
+</script></body></html>
